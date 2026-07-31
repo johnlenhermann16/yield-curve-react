@@ -5,13 +5,6 @@ import { shortMonth } from '../events'
 import { COUNTRY_BY_NAME, SPREAD_COUNTRIES } from '../constants'
 
 const MAX_FROM = '1976-06-01' // T10Y2Y series start on FRED
-const RANGES = [
-  { label: '1Y', years: 1 },
-  { label: '2Y', years: 2 },
-  { label: '4Y', years: 4 },
-  { label: '10Y', years: 10 },
-  { label: 'Max', years: 'max' },
-]
 
 // ISO date `years` before today.
 function isoYearsAgo(years) {
@@ -64,14 +57,17 @@ function formatDate(dateStr) {
 // rather than per-country props, so adding a fourth country is a one-line change
 // in constants.js. With none of them selected we show the grey notice per spec
 // rather than fetching.
-export default function SpreadChart({ selected, selectedDate }) {
+// `years`/`setYears` are owned by App so the range buttons can render on the
+// chart tab rail alongside the Yield Curve / 2Y10Y tabs. Everything else about
+// the range behaviour — including the auto-widen effect below, which only calls
+// setYears and never reads it — is unchanged by that lift.
+export default function SpreadChart({ selected, selectedDate, years, setYears }) {
   const shown = SPREAD_COUNTRIES.filter((c) => selected.includes(c))
   const hasUnsupported = selected.some((c) => !SPREAD_COUNTRIES.includes(c))
   // Stable dep for the fetch effect: `shown` is a fresh array every render, so
   // using it directly would re-fire the effect forever.
   const shownKey = shown.join(',')
 
-  const [years, setYears] = useState(4)
   // { [country]: [{date, spread}, ...] } — replaced wholesale on each fetch, so
   // a deselected country's points drop out without any cleanup step.
   const [data, setData] = useState({})
@@ -261,13 +257,18 @@ export default function SpreadChart({ selected, selectedDate }) {
           xref: 'x', yref: 'paper', x: selectedDate, y: 1, yanchor: 'bottom',
           text: shortMonth(selectedDate),
           showarrow: false,
-          font: { family: 'Barlow Condensed, sans-serif', size: 12, color: '#5980a6' },
+          font: { family: 'Barlow Condensed, sans-serif', size: 12, color: '#41617f' },
         }]
       : [],
     hovermode: 'x',
-    hoverlabel: { font: { family: 'Barlow, sans-serif' } },
-    plot_bgcolor: 'white',
-    paper_bgcolor: 'white',
+    hoverlabel: {
+      bgcolor: '#ffffff',
+      bordercolor: 'rgba(18, 18, 24, 0.14)',
+      font: { family: 'Barlow, sans-serif', color: '#14141a' },
+    },
+    // Matches the white inset the plot sits on in App.jsx.
+    plot_bgcolor: '#fcfcfd',
+    paper_bgcolor: '#fcfcfd',
     margin: { l: 60, r: 24, t: 56, b: 48 },
     autosize: true,
   }
@@ -298,21 +299,21 @@ export default function SpreadChart({ selected, selectedDate }) {
   return (
     <div>
       {hasUnsupported && (
-        <p className="text-muted" style={{ margin: '0 0 var(--space-3)', fontSize: 12 }}>
+        <p className="text-muted" style={{ margin: '0 0 var(--space-2)', fontSize: 13 }}>
           Spread data available for {SPREAD_COUNTRIES.slice(0, -1).join(', ')} and{' '}
           {SPREAD_COUNTRIES.at(-1)} only. Other countries coming soon.
         </p>
       )}
-      <p className="text-muted" style={{ margin: '0 0 var(--space-4)', fontSize: 12 }}>
+      <p className="text-muted" style={{ margin: '0 0 var(--space-2)', fontSize: 13 }}>
         Below zero = inverted curve. Historically precedes recessions.
       </p>
       {selectedDate && (
-        <p className="text-muted" style={{ margin: '0 0 var(--space-2)', fontSize: 11 }}>
+        <p className="text-muted" style={{ margin: '0 0 16px', fontSize: 13 }}>
           Viewing: {formatDate(selectedDate)}
         </p>
       )}
 
-      <div style={{ position: 'relative' }}>
+      <div className="plot-inset">
         {loading && (
           <div
             style={{
@@ -344,27 +345,6 @@ export default function SpreadChart({ selected, selectedDate }) {
             style={{ width: '100%', height: '520px' }}
           />
         )}
-      </div>
-
-      <div style={{ display: 'flex', gap: 'var(--space-2)', marginTop: 'var(--space-3)' }}>
-        {RANGES.map((r) => (
-          <button
-            key={r.years}
-            type="button"
-            onClick={() => setYears(r.years)}
-            className="btn"
-            style={{
-              fontFamily: 'Barlow Condensed, sans-serif',
-              fontSize: 14,
-              padding: '4px 12px',
-              background: years === r.years ? 'var(--color-accent)' : 'transparent',
-              color: years === r.years ? '#fff' : 'var(--color-text)',
-              border: years === r.years ? '1px solid var(--color-accent)' : '1px solid var(--color-divider)',
-            }}
-          >
-            {r.label}
-          </button>
-        ))}
       </div>
     </div>
   )

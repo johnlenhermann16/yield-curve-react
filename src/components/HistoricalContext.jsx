@@ -1,31 +1,40 @@
 import { useEffect, useState } from 'react'
 import { fetchHistoricalContext } from '../api'
 
-// "What the data shows" — one blueprint card per selected date. The mono design
-// carries no decorative red/orange/blue fills; the API's semantic `color` still
-// tints the kicker so the period type stays readable.
+// "What the data shows" — one card per selected date. The design carries no
+// decorative fills; the API's semantic `color` still tints the kicker so the
+// period type stays readable.
 const KICKER_COLOR = {
-  red: 'var(--color-accent-900)',
-  orange: 'var(--color-accent-700)',
-  blue: 'var(--color-accent-500)',
+  red: '#b4342a',
+  orange: '#a06400',
+  blue: 'var(--color-accent-2)',
 }
 
-// The nearby-event details, styled as a subsection with an amber accent.
+const CARD_PAD = '24px 26px'
+
+// The nearby-event details, as a rounded accent-soft block inside the panel.
 function EventDetails({ event }) {
   return (
-    <div style={{ borderLeft: '3px solid #eab308', paddingLeft: 'var(--space-3)', marginTop: 'var(--space-2)' }}>
-      <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 15 }}>{event.name}</div>
-      <p className="card-body" style={{ margin: 0 }}>{event.desc}</p>
-      <div className="text-muted" style={{ fontSize: 12 }}>{event.date}</div>
+    <div
+      style={{
+        marginTop: 'var(--space-4)', padding: '14px 16px', borderRadius: 12,
+        border: '1px solid var(--color-accent-soft)', background: 'var(--color-accent-soft)',
+      }}
+    >
+      <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 16 }}>{event.name}</div>
+      <p className="card-body" style={{ margin: '4px 0 0', fontSize: 13 }}>{event.desc}</p>
+      <div style={{ marginTop: 6, fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-muted)' }}>
+        {event.date}
+      </div>
     </div>
   )
 }
 
 function Panel({ ctx, Corners, event }) {
   return (
-    <div className="card blueprint">
+    <div className="card card-hover" style={{ padding: CARD_PAD }}>
       {Corners && <Corners />}
-      <div className="card-kicker" style={{ color: KICKER_COLOR[ctx.color] ?? 'var(--color-accent)' }}>
+      <div className="card-kicker" style={{ color: KICKER_COLOR[ctx.color] ?? 'var(--color-accent-2)' }}>
         {ctx.date}
       </div>
       <div className="card-title">{ctx.title}</div>
@@ -56,13 +65,13 @@ export default function HistoricalContext({ dates, Corners, event }) {
     if (!event) return null
     return (
       <div
-        className="card blueprint"
-        style={{ marginBottom: 'var(--space-6)', padding: 'var(--space-4) var(--space-6)', borderLeft: '3px solid #eab308' }}
+        className="card card-hover"
+        style={{ marginBottom: 'var(--space-6)', padding: CARD_PAD, background: 'var(--color-accent-soft)' }}
       >
         {Corners && <Corners />}
-        <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 18 }}>{event.name}</div>
-        <p className="card-body" style={{ margin: 0, opacity: 0.85 }}>{event.desc}</p>
-        <div className="text-muted" style={{ fontSize: 12 }}>{event.date}</div>
+        <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 18 }}>{event.name}</div>
+        <p className="card-body" style={{ margin: 0 }}>{event.desc}</p>
+        <div style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--color-muted)' }}>{event.date}</div>
       </div>
     )
   }
@@ -73,12 +82,14 @@ export default function HistoricalContext({ dates, Corners, event }) {
 
   return (
     <section style={{ marginBottom: 'var(--space-6)' }}>
-      <h2 style={{ fontSize: 24, marginBottom: 'var(--space-4)' }}>What the data shows</h2>
+      <h2 style={{ fontSize: 30, marginBottom: 16 }}>What the data shows</h2>
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: 'var(--space-4)',
+          // auto-fit rather than the mock's fixed 1fr 1fr: three dates would
+          // otherwise leave a 2+1 row with a hole in it.
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+          gap: 18,
         }}
       >
         {panels.map((ctx, i) => (

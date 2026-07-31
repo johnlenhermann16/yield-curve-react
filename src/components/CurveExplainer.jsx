@@ -75,6 +75,7 @@ function Tab({ name, active, onClick }) {
       type="button"
       onClick={onClick}
       className={`btn ${active ? 'btn-primary' : 'btn-secondary'}`}
+      style={{ fontFamily: 'var(--font-body)', fontSize: 14, padding: '8px 18px', borderRadius: 999 }}
     >
       {name}
     </button>
@@ -91,14 +92,11 @@ export default function CurveExplainer({ selected, countryData, Corners }) {
   const bullets = shape ? BULLETS[shape] : NO_SHAPE
 
   return (
-    <section
-      className="card blueprint"
-      style={{ padding: 'var(--space-6)', marginBottom: 'var(--space-6)' }}
-    >
+    <section className="card" style={{ padding: '26px 28px' }}>
       {Corners && <Corners />}
-      <h2 style={{ fontSize: 20, marginBottom: 'var(--space-3)' }}>Curve shape</h2>
+      <h2 style={{ fontSize: 22, marginBottom: 16 }}>Curve shape</h2>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 18 }}>
         {selected.map((name) => (
           <Tab
             key={name}
@@ -109,17 +107,23 @@ export default function CurveExplainer({ selected, countryData, Corners }) {
         ))}
       </div>
 
-      <div className="card-kicker" style={{ marginBottom: 'var(--space-3)' }}>
+      <div
+        style={{
+          alignSelf: 'flex-start', marginBottom: 16,
+          fontSize: 12, letterSpacing: '0.06em', padding: '5px 12px', borderRadius: 999,
+          background: 'var(--color-accent-soft)', color: 'var(--color-accent-2)',
+        }}
+      >
         {current} — {shape ? SHAPE_LABEL[shape] : 'Shape unavailable'}
       </div>
 
-      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 11 }}>
         {bullets.map((b, i) => (
-          <li key={i} style={{ display: 'flex', gap: 'var(--space-2)', fontSize: 14 }}>
+          <li key={i} style={{ display: 'flex', gap: 12, fontSize: 14 }}>
             <span
               style={{
                 marginTop: 7, height: 6, width: 6, flex: 'none',
-                borderRadius: '50%', background: 'var(--color-accent)',
+                borderRadius: '50%', background: 'var(--color-accent-2)',
               }}
             />
             <span>{b}</span>
@@ -129,11 +133,10 @@ export default function CurveExplainer({ selected, countryData, Corners }) {
 
       {current === 'Japan' && (
         <p
-          className="text-muted"
           style={{
-            marginTop: 'var(--space-4)', marginBottom: 0, padding: 'var(--space-3)',
-            fontSize: 14, border: '1px solid var(--color-divider)',
-            background: 'var(--color-accent-100)', color: 'var(--color-accent-900)',
+            marginTop: 'var(--space-4)', marginBottom: 0, padding: '14px 16px',
+            fontSize: 14, borderRadius: 12, border: '1px solid var(--color-divider)',
+            background: 'var(--color-accent-soft)', color: 'var(--color-text)',
           }}
         >
           {JAPAN_YCC}

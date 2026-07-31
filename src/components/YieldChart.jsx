@@ -166,9 +166,14 @@ export default function YieldChart({ series, primaryDate }) {
       font: { size: 13 },
     },
     hovermode: 'closest',
-    hoverlabel: { font: { family: 'Barlow, sans-serif' } },
-    plot_bgcolor: 'white',
-    paper_bgcolor: 'white',
+    hoverlabel: {
+      bgcolor: '#ffffff',
+      bordercolor: 'rgba(18, 18, 24, 0.14)',
+      font: { family: 'Barlow, sans-serif', color: '#14141a' },
+    },
+    // Matches the white inset the plot sits on in App.jsx.
+    plot_bgcolor: '#fcfcfd',
+    paper_bgcolor: '#fcfcfd',
     margin: { l: 60, r: 24, t: 56, b: 72 },
     autosize: true,
   }

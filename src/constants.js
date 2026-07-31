@@ -22,6 +22,17 @@ export const COUNTRY_BY_NAME = Object.fromEntries(
 // empty/unsupported notices from this list, so nothing else needs changing.
 export const SPREAD_COUNTRIES = ['US', 'UK', 'Germany']
 
+// Spread-chart lookback tiers. Lives here rather than in SpreadChart because the
+// range buttons render on App's chart tab rail while the state they drive is
+// consumed by SpreadChart.
+export const RANGES = [
+  { label: '1Y', years: 1 },
+  { label: '2Y', years: 2 },
+  { label: '4Y', years: 4 },
+  { label: '10Y', years: 10 },
+  { label: 'Max', years: 'max' },
+]
+
 // Canonical maturity ordering, short → long. The x-axis is categorical and
 // always renders in this order.
 export const MATURITIES = [
