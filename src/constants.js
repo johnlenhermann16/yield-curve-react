@@ -50,5 +50,3 @@ export const MATURITIES = [
 ]
 
 export const DEFAULT_DATE = '2023-01-13'
-
-export const API_URL = import.meta.env.VITE_API_URL
