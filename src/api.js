@@ -1,6 +1,8 @@
 // Reads sovereign yield/spread data directly from Supabase via PostgREST
 // (plain fetch — no supabase-js). RLS grants anon SELECT only, so every
 // request here is a read.
+import { getHistoricalContext } from './historicalContext'
+
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 
@@ -138,10 +140,8 @@ export async function fetchSpread(country, from, to) {
   }
 }
 
-// Historical-context copy (period title/description/color) was never part of
-// the Supabase migration — no table backs it. Resolve to null so
-// HistoricalContext falls back to its event-only view instead of erroring
-// per date.
-export async function fetchHistoricalContext(_date) {
-  return null
+// Historical-context copy (period title/description/color) is a static
+// lookup by year, not Supabase-backed data — see historicalContext.js.
+export async function fetchHistoricalContext(date) {
+  return { date, ...getHistoricalContext(date) }
 }
