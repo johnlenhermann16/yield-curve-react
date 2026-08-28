@@ -82,7 +82,7 @@ export default function HistoricalContext({ dates, Corners, event }) {
 
   return (
     <section style={{ marginBottom: 'var(--space-6)' }}>
-      <h2 style={{ fontSize: 30, marginBottom: 16 }}>What the data shows</h2>
+      <h2 className="section-title">What the data shows</h2>
       <div
         style={{
           display: 'grid',

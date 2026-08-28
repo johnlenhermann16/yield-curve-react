@@ -57,7 +57,7 @@
   --shadow-lg: 0 12px 32px rgba(20, 20, 26, 0.18);
 }
 
-html, body, #root { height: 100%; }
+html, body, #root { height: 100%; overflow-x: hidden; }
 
 *, *::before, *::after { box-sizing: border-box; }
 body {
@@ -186,6 +186,20 @@ input[type="checkbox"] { accent-color: var(--color-accent); width: 16px; height:
 .nav a { color: var(--color-muted); text-decoration: none; font-size: 14px; }
 .nav a:hover, .nav a[aria-current='page'] { color: var(--color-text); }
 
+/* — mobile layout — page gutter, stat grid, chart-tab rail, explainer row and
+   hero/section headings all get a fixed desktop value as their base rule
+   (matching the current inline styles exactly) so nothing changes above the
+   breakpoint; only the @media block below diverges. */
+.page-col { padding: 0 40px; }
+.stat-grid { grid-template-columns: repeat(4, 1fr); }
+.stat-tile { padding: 30px 28px; }
+.stat-tile-value { font-size: 46px; }
+.chart-range-pills { margin-left: auto; }
+.explainer-grid { grid-template-columns: 1fr; }
+.explainer-grid.has-selection { grid-template-columns: 1.15fr 1fr; }
+.hero-title { font-size: 52px; line-height: 1.04; }
+.section-title { font-size: 30px; margin-bottom: 16px; }
+
 /* Share pill in the nav. */
 .pill-accent {
   font-family: var(--font-body); font-size: 13px; font-weight: 500;
@@ -211,6 +225,31 @@ input[type="checkbox"] { accent-color: var(--color-accent); width: 16px; height:
 .modebar-btn:hover .icon path { fill: var(--color-accent) !important; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* — mobile (≤700px) — nav wraps, stat grid drops to 2-up, chart-tab rail and
+   range pills wrap, explainer row collapses to one column, headings shrink.
+   Every rule here only ever overrides a class whose base rule reproduces the
+   current desktop value, so nothing above 700px is affected. */
+@media (max-width: 700px) {
+  .nav-inner { flex-wrap: wrap; gap: 12px 16px; padding: 12px 20px; }
+  .nav-brand { margin-right: 0; }
+
+  .page-col { padding: 0 20px; }
+
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .stat-tile { padding: 16px 12px; }
+  .stat-tile-value { font-size: 26px; }
+
+  .chart-tabs { flex-wrap: wrap; row-gap: 10px; }
+  .chart-range-pills { margin-left: 0; flex-wrap: wrap; row-gap: 8px; }
+
+  .explainer-grid.has-selection { grid-template-columns: 1fr; }
+
+  .hero-title { font-size: 30px; line-height: 1.12; }
+  .hero-break { display: none; }
+
+  .section-title { font-size: 22px; }
+}
 
 @media (prefers-reduced-motion: no-preference) {
   @keyframes scfade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }

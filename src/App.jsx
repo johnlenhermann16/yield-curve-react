@@ -10,9 +10,10 @@ import { nearestEvent, shortMonth } from './events'
 
 const TODAY = new Date().toISOString().slice(0, 10)
 
-// Page gutter: content sits 40px inside a 1200px column, matched by .nav-inner
-// and the header panel so nav, hero and cards all share one left edge.
-const COLUMN = { maxWidth: 1200, margin: '0 auto', padding: '0 40px' }
+// Page gutter: content sits inside a 1200px column, matched by .nav-inner
+// so nav, hero and cards all share one left edge. Side padding lives in the
+// .page-col class (index.css) rather than here so it can shrink on mobile.
+const COLUMN = { maxWidth: 1200, margin: '0 auto' }
 
 // Read selection from the URL query string; null for anything absent/empty so
 // callers can fall back to defaults. Country/date tokens are already URL-safe.
@@ -243,7 +244,7 @@ function App() {
           backgroundSize: 'auto, 22px 22px',
         }}
       >
-        <div style={COLUMN}>
+        <div className="page-col" style={COLUMN}>
           <header className="scfade" style={{ maxWidth: '64ch' }}>
             <div
               style={{
@@ -256,8 +257,8 @@ function App() {
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-accent-2)' }} />
               Nine sovereign markets · 1M to 30Y · since 1990
             </div>
-            <h1 style={{ fontSize: 52, lineHeight: 1.04, letterSpacing: '-0.02em', margin: '0 0 14px' }}>
-              Government Bond<br />Yield Curve Visualiser
+            <h1 className="hero-title" style={{ letterSpacing: '-0.02em', margin: '0 0 14px' }}>
+              Government Bond <br className="hero-break" />Yield Curve Visualiser
             </h1>
             <p style={{ fontSize: 17, color: 'var(--color-muted)', margin: 0, textWrap: 'pretty' }}>
               A reference tool for comparing sovereign bond yields across maturities. Select one or
@@ -267,10 +268,10 @@ function App() {
           </header>
 
           <div
-            className="scfade"
+            className="scfade stat-grid"
             style={{
               position: 'relative', marginTop: 36, animationDelay: '60ms',
-              display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)',
+              display: 'grid',
               border: '1px solid var(--color-divider)', borderRadius: 'var(--radius-lg)',
               background: 'var(--color-surface)',
               backgroundImage: 'radial-gradient(var(--color-dot) 1px, transparent 1px)',
@@ -281,14 +282,16 @@ function App() {
             {stats.map((s, i) => (
               <div
                 key={s.label}
+                className="stat-tile"
                 style={{
-                  padding: '30px 28px', textAlign: 'center',
+                  textAlign: 'center',
                   borderLeft: i > 0 ? '1px solid var(--color-divider)' : undefined,
                 }}
               >
                 <div
+                  className="stat-tile-value"
                   style={{
-                    fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 46,
+                    fontFamily: 'var(--font-heading)', fontWeight: 600,
                     lineHeight: 1, letterSpacing: '-0.02em', color: s.tone ?? 'var(--color-text)',
                   }}
                 >
@@ -301,7 +304,7 @@ function App() {
         </div>
       </div>
 
-      <main style={{ ...COLUMN, paddingTop: 8, paddingBottom: 44, display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <main className="page-col" style={{ ...COLUMN, paddingTop: 8, paddingBottom: 44, display: 'flex', flexDirection: 'column', gap: 20 }}>
         {/* Controls */}
         <section
           id="tool"
@@ -367,6 +370,7 @@ function App() {
 
           {/* Chart type tabs, with the spread range pills on the same rail. */}
           <div
+            className="chart-tabs"
             style={{
               display: 'flex', alignItems: 'center', gap: 26,
               borderBottom: '1px solid var(--color-divider)', marginBottom: 18,
@@ -391,7 +395,7 @@ function App() {
             ))}
 
             {showRanges && (
-              <div style={{ marginLeft: 'auto', paddingBottom: 12, display: 'flex', gap: 7 }}>
+              <div className="chart-range-pills" style={{ paddingBottom: 12, display: 'flex', gap: 7 }}>
                 {RANGES.map((r) => (
                   <button
                     key={r.label}
@@ -488,11 +492,8 @@ function App() {
             country is selected CurveExplainer renders null, so collapse to one
             column rather than leaving a hole in the row. */}
         <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: selected.length ? '1.15fr 1fr' : '1fr',
-            gap: 18,
-          }}
+          className={`explainer-grid${selected.length ? ' has-selection' : ''}`}
+          style={{ display: 'grid', gap: 18 }}
         >
           <CurveExplainer selected={selected} countryData={results[0]?.countryData} Corners={Corners} />
 
