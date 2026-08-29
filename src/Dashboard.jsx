@@ -516,7 +516,7 @@ export default function Dashboard() {
                 className={`explainer-grid${selected.length ? ' has-selection' : ''}`}
                 style={{ display: 'grid', gap: 16 }}
               >
-                <CurveExplainer selected={selected} countryData={results[0]?.countryData} />
+                <CurveExplainer selected={selected} results={results} />
 
                 <div
                   style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}

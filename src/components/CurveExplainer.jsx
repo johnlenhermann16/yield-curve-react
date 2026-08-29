@@ -1,29 +1,6 @@
 import { useState } from 'react'
-import { MATURITIES } from '../constants'
-
-// Shape from the primary-date yields. Humped = interior peak clearly above both
-// ends; otherwise compare 2Y vs 10Y with a small flat band.
-// ponytail: fixed 0.15%/0.10% thresholds; tune if a market needs finer bands.
-function classifyShape(yields) {
-  if (!yields) return null
-  const present = MATURITIES.filter((m) => m in yields)
-  if (present.length >= 3) {
-    const vals = present.map((m) => yields[m])
-    const peak = Math.max(...vals)
-    const peakIdx = vals.indexOf(peak)
-    const first = vals[0]
-    const last = vals[vals.length - 1]
-    if (peakIdx > 0 && peakIdx < vals.length - 1 && peak - first > 0.1 && peak - last > 0.1) {
-      return 'humped'
-    }
-  }
-  const short = yields['2Y']
-  const long = yields['10Y']
-  if (short == null || long == null) return null
-  const diff = long - short
-  if (Math.abs(diff) <= 0.15) return 'flat'
-  return diff > 0 ? 'normal' : 'inverted'
-}
+import { shortMonth } from '../events'
+import { groupByShape } from '../curveShape'
 
 const SHAPE_LABEL = {
   normal: 'Normal (upward-sloping)',
@@ -82,14 +59,14 @@ function Tab({ name, active, onClick }) {
   )
 }
 
-// countryData: the primary date's { <name>: { yields } } map.
-export default function CurveExplainer({ selected, countryData }) {
+// results: [{ date, countryData: { <name>: { yields } } }], one entry per
+// selected date (primary first).
+export default function CurveExplainer({ selected, results }) {
   const [active, setActive] = useState(selected[0])
 
   if (selected.length === 0) return null
   const current = selected.includes(active) ? active : selected[0]
-  const shape = classifyShape(countryData?.[current]?.yields)
-  const bullets = shape ? BULLETS[shape] : NO_SHAPE
+  const groups = groupByShape(results, current)
 
   return (
     <section className="card" style={{ padding: '18px 20px' }}>
@@ -106,29 +83,61 @@ export default function CurveExplainer({ selected, countryData }) {
         ))}
       </div>
 
-      <div
-        style={{
-          alignSelf: 'flex-start', marginBottom: 14,
-          fontSize: 11, letterSpacing: '0.06em', padding: '4px 10px', borderRadius: 'var(--radius-sm)',
-          background: 'var(--color-accent-soft)', color: 'var(--color-accent-2)',
-        }}
-      >
-        {current} — {shape ? SHAPE_LABEL[shape] : 'Shape unavailable'}
-      </div>
-
-      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 11 }}>
-        {bullets.map((b, i) => (
-          <li key={i} style={{ display: 'flex', gap: 12, fontSize: 12 }}>
-            <span
-              style={{
-                marginTop: 7, height: 6, width: 6, flex: 'none',
-                borderRadius: '50%', background: 'var(--color-accent-2)',
-              }}
-            />
-            <span>{b}</span>
-          </li>
-        ))}
-      </ul>
+      {groups.length === 0 ? (
+        <>
+          <div
+            style={{
+              alignSelf: 'flex-start', marginBottom: 14,
+              fontSize: 11, letterSpacing: '0.06em', padding: '4px 10px', borderRadius: 'var(--radius-sm)',
+              background: 'var(--color-accent-soft)', color: 'var(--color-accent-2)',
+            }}
+          >
+            {current} — Shape unavailable
+          </div>
+          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 11 }}>
+            {NO_SHAPE.map((b, i) => (
+              <li key={i} style={{ display: 'flex', gap: 12, fontSize: 12 }}>
+                <span
+                  style={{
+                    marginTop: 7, height: 6, width: 6, flex: 'none',
+                    borderRadius: '50%', background: 'var(--color-accent-2)',
+                  }}
+                />
+                <span>{b}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {groups.map(({ shape, dates }) => (
+            <div key={shape}>
+              <div
+                style={{
+                  alignSelf: 'flex-start', marginBottom: 14,
+                  fontSize: 11, letterSpacing: '0.06em', padding: '4px 10px', borderRadius: 'var(--radius-sm)',
+                  background: 'var(--color-accent-soft)', color: 'var(--color-accent-2)',
+                }}
+              >
+                {current} — {SHAPE_LABEL[shape]} ({dates.map(shortMonth).join(', ')})
+              </div>
+              <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 11 }}>
+                {BULLETS[shape].map((b, i) => (
+                  <li key={i} style={{ display: 'flex', gap: 12, fontSize: 12 }}>
+                    <span
+                      style={{
+                        marginTop: 7, height: 6, width: 6, flex: 'none',
+                        borderRadius: '50%', background: 'var(--color-accent-2)',
+                      }}
+                    />
+                    <span>{b}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      )}
 
       {current === 'Japan' && (
         <p
