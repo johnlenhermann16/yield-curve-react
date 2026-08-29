@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Plot from 'react-plotly.js'
 import { fetchSpread } from '../api'
 import { shortMonth } from '../events'
@@ -74,8 +74,8 @@ export default function SpreadChart({ selected, selectedDate, years, setYears })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  // Viewport auto-centring: 'init' until the primary date actually changes, so
-  // first load keeps the plain 4Y default range instead of jumping. Doubles as
+  // Viewport auto-centring: 'init' until the effect below runs (which happens
+  // right after mount, and again on every selectedDate change). Doubles as
   // Plotly's uirevision — while it stays the same value, Plotly preserves any
   // pan/zoom the user has done; when it changes, Plotly applies the new
   // xaxis.range (the centred window) once, then lets the user pan freely again.
@@ -83,16 +83,14 @@ export default function SpreadChart({ selected, selectedDate, years, setYears })
   // Visible x-window driving the y-axis fit: the user's current pan/zoom (set
   // from onRelayout), or null to fall back to the centred viewport.
   const [xRange, setXRange] = useState(null)
-  const mountedRef = useRef(false)
   useEffect(() => {
-    if (!mountedRef.current) {
-      mountedRef.current = true
-      return
-    }
     // Snap the range to the smallest tier covering the picked date, every time
     // — widening for older dates, narrowing for newer ones. null means the date
     // is within the last year, so any current range already covers it; leave
-    // `years` as-is in that case.
+    // `years` as-is in that case. Runs on mount too: SpreadChart fully
+    // unmounts/remounts on every tab switch, so "on mount" and "on date
+    // change" must behave the same or re-arriving at the tab shows a stale,
+    // uncentred view.
     if (selectedDate) {
       const r = rangeForDate(selectedDate)
       if (r !== null) setYears(r)
@@ -151,10 +149,12 @@ export default function SpreadChart({ selected, selectedDate, years, setYears })
   const to = allDates.length ? allDates.reduce((a, b) => (a > b ? a : b)) : new Date().toISOString().slice(0, 10)
 
   // Force the centred window only once uirevision has actually changed (i.e.
-  // not on first mount) — see the effect above.
+  // the mount/date-change effect above has run) — see that effect. Clamp the
+  // upper edge to the latest fetched date so centring on a recent date (e.g.
+  // today) doesn't waste half the plot on empty future dates.
   const centerRange =
     viewRevision !== 'init' && selectedDate
-      ? [addYears(selectedDate, -1), addYears(selectedDate, 1)]
+      ? [addYears(selectedDate, -1), addYears(selectedDate, 1) < to ? addYears(selectedDate, 1) : to]
       : undefined
 
   // Plotly autoranges y to ALL loaded points, so a Max chart centred on recent

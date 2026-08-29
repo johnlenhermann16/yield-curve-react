@@ -303,7 +303,10 @@ export default function Dashboard() {
               <button
                 key={t.key}
                 type="button"
-                onClick={() => setChartTab(t.key)}
+                onClick={() => {
+                  setChartTab(t.key)
+                  anchor('chart-card')
+                }}
                 aria-current={chartTab === t.key ? 'true' : undefined}
                 className={`chart-tab${chartTab === t.key ? ' active' : ''}`}
               >

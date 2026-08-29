@@ -49,4 +49,4 @@ export const MATURITIES = [
   '30Y',
 ]
 
-export const DEFAULT_DATE = '2023-01-13'
+export const DEFAULT_DATE = new Date().toISOString().slice(0, 10)
