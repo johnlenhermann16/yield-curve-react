@@ -173,6 +173,13 @@ export default function YieldChart({ series, primaryDate }) {
       x: 0,
       font: { size: 11 },
     },
+    // Set here rather than by CSS: with a transparent paper_bgcolor Plotly
+    // falls back to its dark modebar theme, which no longer matches anything.
+    modebar: {
+      bgcolor: 'rgba(0, 0, 0, 0)',
+      color: '#6B7280',
+      activecolor: '#0E9A92',
+    },
     hovermode: 'closest',
     hoverlabel: {
       bgcolor: '#FFFFFF',
@@ -192,7 +199,12 @@ export default function YieldChart({ series, primaryDate }) {
     },
   }
 
-  const config = { displayModeBar: true, scrollZoom: true, responsive: true }
+  const config = {
+    displayModeBar: true,
+    scrollZoom: true,
+    responsive: true,
+    modeBarButtonsToRemove: ['lasso2d', 'select2d', 'autoScale2d'],
+  }
 
   return (
     <Plot
