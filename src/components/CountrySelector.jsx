@@ -12,13 +12,22 @@ export default function CountrySelector({ selected, onToggle }) {
         const isOn = selected.includes(country.name)
         return (
           <label key={country.name} className={isOn ? 'chip chip-on' : 'chip'}>
-            <input type="checkbox" checked={isOn} onChange={() => onToggle(country.name)} />
+            {/* Visually hidden, not removed: the chip's own fill and border
+                carry the state visually, while the real checkbox keeps the
+                control keyboard- and screen-reader-navigable and
+                .chip:has(:focus-visible) still rings the whole pill. */}
+            <input
+              type="checkbox"
+              className="sr-only"
+              checked={isOn}
+              onChange={() => onToggle(country.name)}
+            />
             <span
               style={{
                 display: 'inline-block', flex: 'none', background: country.color,
                 width: country.tenYearOnly ? 9 : 22,
                 height: country.tenYearOnly ? 9 : 3,
-                borderRadius: country.tenYearOnly ? '50%' : 0,
+                borderRadius: country.tenYearOnly ? '50%' : 2,
               }}
             />
             <span>{country.name}</span>

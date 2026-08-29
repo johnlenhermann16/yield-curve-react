@@ -1,257 +1,359 @@
-@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
 
 /* ══════════════════════════════════════════════════════════════════════════
-   "Studio" design system — tokens + component classes, per the Claude Design
-   handoff. Single light theme, no dark mode. Token *names* are unchanged from
-   the previous blueprint system, so var() call sites did not have to move.
-   ══════════════════════════════════════════════════════════════════════ */
+   Light analytical dashboard — white cards on a lightly tinted page, a single
+   teal accent, Inter Tight throughout, IBM Plex Mono reserved for figures.
+   Motion is press feedback only: every pressable element dips to 97%, the tab
+   underline slides, cards lift a hair on hover. Nothing animates on its own
+   except the ticker.
+
+   Replaced the dark trading-panel theme. Tailwind was removed (zero utility
+   classes were ever used); the reset below covers what its preflight did.
+   ══════════════════════════════════════════════════════════════════════════ */
+
 :root {
   color-scheme: light;
 
-  --color-bg: #f6f6f8;
-  --color-bg-2: #ffffff;          /* nav, inputs, inset panels */
-  --color-surface: #ffffff;       /* cards */
-  --color-text: #14141a;
-  --color-muted: rgba(20, 20, 26, 0.6);
-  --color-accent: #5980a6;
-  --color-accent-2: #41617f;      /* darker accent for kickers/links on white */
-  --color-accent-soft: rgba(89, 128, 166, 0.12);
-  --color-accent-glow: rgba(89, 128, 166, 0.18);
-  --color-divider: rgba(18, 18, 24, 0.11);
-  --color-divider-strong: rgba(18, 18, 24, 0.2);
-  --color-dot: rgba(18, 18, 24, 0.09);   /* dot-grid background */
+  --color-bg: #f7f8fa;                /* page */
+  --color-surface-1: #ffffff;         /* cards, panels, header */
+  --color-surface-2: #f2f4f7;         /* nested/hover surface, inputs */
+  --color-text: #0b0f14;
+  --color-muted: #6b7280;
+  --color-on-accent: #ffffff;         /* text sitting on a teal fill */
 
-  --color-neutral-100: #f5f5f8;
-  --color-neutral-200: #e7e7ea;
-  --color-neutral-300: #d4d4d7;
-  --color-neutral-400: #b7b7ba;
-  --color-neutral-500: #98989b;
-  --color-neutral-600: #7a7a7d;
-  --color-neutral-700: #5d5d60;
-  --color-neutral-800: #424244;
-  --color-neutral-900: #2b2b2d;
+  --color-accent: #0e9a92;            /* teal — the signature, darkened for white */
+  --color-accent-2: #0b7f79;          /* hover DARKENS on a light theme */
+  --color-accent-red: #d32f3c;
+  --color-positive: #0a8f55;          /* up-deltas only, not a general accent */
+  --color-accent-soft: rgba(14, 154, 146, 0.10);
 
-  /* The accent-100…900 and accent-2-100…900 ramps are gone: every call site now
-     uses --color-accent / --color-accent-2 / --color-accent-soft, so re-theming
-     is a four-token swap. */
+  --color-divider: #eceef2;
+  --color-divider-strong: #d8dce3;
 
-  --font-heading: "Barlow Condensed", system-ui, sans-serif;
+  --shadow-card: 0 1px 2px rgba(11, 15, 20, 0.04), 0 1px 3px rgba(11, 15, 20, 0.03);
+  --shadow-card-hover: 0 2px 4px rgba(11, 15, 20, 0.06), 0 4px 10px rgba(11, 15, 20, 0.05);
+
+  --font-heading: "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-heading-weight: 600;
-  --font-body: "Barlow", system-ui, sans-serif;
+  --font-body: "Inter Tight", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
-  --space-1: 3.4px;
-  --space-2: 6.8px;
-  --space-3: 10.2px;
-  --space-4: 13.6px;
-  --space-6: 20.4px;
-  --space-8: 27.2px;
+  --space-1: 2px;
+  --space-2: 4px;
+  --space-3: 8px;
+  --space-4: 12px;
+  --space-6: 16px;
+  --space-8: 24px;
 
-  --radius-sm: 8px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
+  --radius: 10px;
+  --radius-sm: 6px;
 
-  --shadow-sm: 0 1px 2px rgba(20, 20, 26, 0.1);
-  --shadow-md: 0 3px 10px rgba(20, 20, 26, 0.12);
-  --shadow-lg: 0 12px 32px rgba(20, 20, 26, 0.18);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --duration-fast: 120ms;
+  --duration-base: 180ms;
+  --duration-chart: 300ms;
+
+  /* Plot height. Both charts and every empty/loading placeholder read this, so
+     the phone case is one declaration rather than five hardcoded 520s. */
+  --chart-h: 520px;
 }
 
-html, body, #root { height: 100%; overflow-x: hidden; }
-
+/* — reset (replaces Tailwind preflight) — */
 *, *::before, *::after { box-sizing: border-box; }
-body {
+html, body, #root { height: 100%; overflow-x: hidden; }
+body { margin: 0; }
+button, input, optgroup, select, textarea {
+  font-family: inherit; font-size: 100%; line-height: inherit; color: inherit;
   margin: 0;
+}
+button { background: transparent; background-image: none; }
+img, svg, video { display: block; max-width: 100%; }
+
+body {
   background: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-body);
-  font-size: 15px;
-  line-height: 1.55;
+  font-size: 13px;
+  line-height: 1.45;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
 }
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-heading); font-weight: var(--font-heading-weight);
-  line-height: 1.12; letter-spacing: -0.015em; margin: 0 0 var(--space-2);
+  line-height: 1.2; letter-spacing: -0.015em; margin: 0 0 var(--space-2);
 }
-h1 { font-size: 42px; }
-h2 { font-size: 32px; }
-h3 { font-size: 25px; }
-h4 { font-size: 20px; }
-h5 { font-size: 16px; }
-h6 { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; }
+h1 { font-size: 20px; letter-spacing: -0.02em; }
+h2 { font-size: 16px; }
+h3 { font-size: 14px; }
+h4 { font-size: 13px; }
+h5 { font-size: 12px; }
+h6 { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
 p { margin: 0 0 var(--space-3); }
 a { color: var(--color-accent); text-underline-offset: 3px; }
-img { display: block; max-width: 100%; }
+a:hover { color: var(--color-accent-2); }
 .text-muted { color: var(--color-muted); }
 :focus { outline: none; }
 :focus-visible { outline: 2px solid var(--color-accent); outline-offset: 2px; }
-::selection { background: color-mix(in srgb, var(--color-accent) 30%, transparent); }
+::selection { background: color-mix(in srgb, var(--color-accent) 22%, transparent); }
 
-input[type="checkbox"] { accent-color: var(--color-accent); width: 16px; height: 16px; cursor: pointer; }
+/* Out of sight, still in the accessibility tree and still focusable. The only
+   checkbox in the app is the country chip's, which is always .sr-only — so
+   there is no visible-checkbox rule here to fight this one on specificity. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
 
 /* — buttons — */
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   cursor: pointer; text-decoration: none;
-  font-family: var(--font-heading); font-weight: var(--font-heading-weight);
-  font-size: 14px; line-height: 1.2; color: var(--color-text);
-  background: transparent; border: 1px solid var(--color-divider);
-  padding: var(--space-2) calc(var(--space-3) * 1.2); border-radius: var(--radius-md);
+  font-family: var(--font-body); font-weight: 500;
+  font-size: 12px; line-height: 1.2; color: var(--color-text);
+  background: var(--color-surface-1); border: 1px solid var(--color-divider-strong);
+  padding: 9px calc(var(--space-3) * 2); border-radius: var(--radius-sm);
+  transition: background var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out);
 }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.btn-primary { background: var(--color-accent); color: #fff; border-color: var(--color-accent); }
-.btn-primary:hover { background: var(--color-accent-2); border-color: var(--color-accent-2); }
-.btn-primary:active { background: var(--color-accent-2); }
-.btn-secondary { border-color: var(--color-divider-strong); color: var(--color-muted); }
-.btn-secondary:hover { color: var(--color-text); background: rgba(18, 18, 24, 0.05); }
-.btn-secondary:active { background: rgba(18, 18, 24, 0.09); }
-.btn-ghost { color: var(--color-muted); padding-inline: var(--space-1); border-color: transparent; }
-.btn-ghost:hover { color: var(--color-text); background: rgba(18, 18, 24, 0.06); }
-.btn-ghost:active { background: rgba(18, 18, 24, 0.11); }
-.btn-icon { width: 34px; height: 34px; padding: 0; border-radius: 999px; }
+.btn-primary { background: var(--color-accent); color: var(--color-on-accent); border-color: var(--color-accent); }
+.btn-primary:hover { background: var(--color-accent-2); border-color: var(--color-accent-2); color: var(--color-on-accent); }
+.btn-secondary { border-color: var(--color-divider-strong); color: var(--color-text); }
+.btn-secondary:hover { background: var(--color-surface-2); }
+.btn-ghost { color: var(--color-muted); padding-inline: var(--space-1); border-color: transparent; background: transparent; }
+.btn-ghost:hover { color: var(--color-text); background: var(--color-surface-2); }
+.btn-icon { width: 32px; height: 32px; padding: 0; border-radius: var(--radius-sm); }
 /* "+ Compare date" — dashed so it reads as "add another", not a peer action. */
 .btn-dashed {
-  min-height: 42px; padding-inline: 14px; border-radius: var(--radius-md);
-  font-family: var(--font-body); font-size: 14px; font-weight: 400;
-  border: 1px dashed var(--color-divider-strong); color: var(--color-accent-2); background: transparent;
+  min-height: 36px; padding-inline: 14px; border-radius: var(--radius-sm);
+  font-size: 12px; font-weight: 400;
+  border: 1px dashed var(--color-divider-strong); color: var(--color-accent); background: transparent;
+  transition: background var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out);
 }
 .btn-dashed:hover { background: var(--color-accent-soft); border-color: var(--color-accent); }
 
 /* — forms — */
 .field > label {
-  display: block; font-size: 13px; font-weight: 500; margin-bottom: 14px;
-  color: var(--color-muted);
+  display: block; font-size: 11px; letter-spacing: 0.04em; font-weight: 500; margin-bottom: 10px;
+  color: var(--color-muted); text-transform: uppercase;
 }
 .input {
-  width: 100%; min-height: 42px; padding: 0 16px; font: inherit;
-  font-size: 14px; color: var(--color-text); caret-color: var(--color-accent);
-  background: var(--color-bg-2);
-  border: 1px solid var(--color-divider); border-radius: var(--radius-md);
+  width: 100%; min-height: 36px; padding: 0 12px; font: inherit;
+  font-family: var(--font-mono); font-size: 12px; font-variant-numeric: tabular-nums;
+  color: var(--color-text); caret-color: var(--color-accent);
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-divider-strong); border-radius: var(--radius-sm);
+  color-scheme: light;
+  transition: border-color var(--duration-fast) var(--ease-out);
 }
-.input:hover { border-color: var(--color-divider-strong); }
+.input:hover { border-color: var(--color-muted); }
 .input:focus-visible { border-color: var(--color-accent); outline-offset: 0; }
 
 /* — cards — */
 .card {
   display: flex; flex-direction: column; gap: var(--space-2);
-  padding: var(--space-3); border-radius: var(--radius-lg);
-  background: var(--color-surface);
+  padding: var(--space-3); border-radius: var(--radius);
+  background: var(--color-surface-1);
   border: 1px solid var(--color-divider);
+  box-shadow: var(--shadow-card);
 }
-/* Hover lift — static context/explainer cards only, never the chart or the
-   controls card (a card that shifts under a date picker or a Plotly drag is
-   the wrong kind of alive). */
-.card-hover { transition: border-color 160ms ease, transform 160ms ease; }
-.card-hover:hover { border-color: var(--color-divider-strong); transform: translateY(-2px); }
-.card-kicker { font-size: 12px; letter-spacing: 0.06em; color: var(--color-accent-2); }
-.card-title { font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: 21px; line-height: 1.2; }
-.card-body { margin: 0; font-size: 14px; color: var(--color-muted); flex: 1; text-wrap: pretty; }
-.elev-sm { box-shadow: var(--shadow-sm); }
-.elev-md { box-shadow: var(--shadow-md); }
-.elev-lg { box-shadow: var(--shadow-lg); }
+.card-hover { transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out); }
+.card-kicker { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-muted); }
+.card-title { font-family: var(--font-heading); font-weight: var(--font-heading-weight); font-size: 14px; line-height: 1.2; }
+.card-body { margin: 0; font-size: 12px; color: var(--color-muted); flex: 1; text-wrap: pretty; }
 
 /* — tags — */
-.tag { display: inline-flex; align-items: center; font-size: 10px; letter-spacing: 0.05em; padding: 2px 7px; border-radius: 999px; }
-.tag-accent { background: var(--color-accent-soft); color: var(--color-accent-2); }
+.tag { display: inline-flex; align-items: center; font-size: 10px; letter-spacing: 0.05em; padding: 2px 6px; border-radius: 4px; }
+.tag-accent { background: var(--color-surface-2); color: var(--color-muted); }
 
 /* — country chips — */
 .chip {
-  display: flex; align-items: center; gap: 10px;
-  padding: 9px 15px 9px 12px; border-radius: 999px; cursor: pointer;
-  font-size: 14px; color: var(--color-muted);
-  border: 1px solid var(--color-divider); background: transparent;
-  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 13px 8px 11px; border-radius: var(--radius-sm); cursor: pointer;
+  font-size: 12px; color: var(--color-muted);
+  border: 1px solid var(--color-divider); background: var(--color-surface-1);
+  transition: border-color var(--duration-fast) var(--ease-out),
+              background var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out);
 }
 .chip:hover { border-color: var(--color-accent); }
 .chip:has(:focus-visible) { outline: 2px solid var(--color-accent); outline-offset: 2px; }
 .chip-on { border-color: var(--color-accent); background: var(--color-accent-soft); color: var(--color-text); }
 
-/* — navigation — */
-/* Full-bleed sticky bar; .nav-inner holds the row to the same 1200/40px gutter
-   as the header panel and <main>, so nav links line up with page content. */
-.nav {
-  position: sticky; top: 0; z-index: 100;
-  background: var(--color-bg); border-bottom: 1px solid var(--color-divider);
+/* — range pills (spread-chart lookback tiers, on the chart card header) — */
+.range-pill {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.04em;
+  padding: 6px 11px; border-radius: var(--radius-sm); cursor: pointer;
+  background: transparent; border: 1px solid var(--color-divider-strong); color: var(--color-muted);
+  transition: background var(--duration-fast) var(--ease-out),
+              border-color var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out),
+              transform var(--duration-fast) var(--ease-out);
 }
-.nav-inner {
-  display: flex; align-items: center; gap: 26px;
-  max-width: 1200px; margin: 0 auto; padding: 16px 40px;
-}
-/* Mark only — the wordmark is gone from this design. */
-.nav-brand {
-  margin-right: auto; display: inline-flex; align-items: center; justify-content: center;
-  width: 24px; height: 24px; border-radius: 7px; background: var(--color-accent);
-}
-.nav a { color: var(--color-muted); text-decoration: none; font-size: 14px; }
-.nav a:hover, .nav a[aria-current='page'] { color: var(--color-text); }
+.range-pill:hover { border-color: var(--color-accent); color: var(--color-text); }
+.range-pill-on { background: var(--color-accent); border-color: var(--color-accent); color: var(--color-on-accent); }
 
-/* — mobile layout — page gutter, stat grid, chart-tab rail, explainer row and
-   hero/section headings all get a fixed desktop value as their base rule
-   (matching the current inline styles exactly) so nothing changes above the
-   breakpoint; only the @media block below diverges. */
-.page-col { padding: 0 40px; }
-.stat-grid { grid-template-columns: repeat(4, 1fr); }
-.stat-tile { padding: 30px 28px; }
-.stat-tile-value { font-size: 46px; }
-.chart-range-pills { margin-left: auto; }
-.explainer-grid { grid-template-columns: 1fr; }
-.explainer-grid.has-selection { grid-template-columns: 1.15fr 1fr; }
-.hero-title { font-size: 52px; line-height: 1.04; }
-.section-title { font-size: 30px; margin-bottom: 16px; }
-
-/* Share pill in the nav. */
-.pill-accent {
-  font-family: var(--font-body); font-size: 13px; font-weight: 500;
-  padding: 8px 18px; border-radius: 999px; cursor: pointer;
-  border: 1px solid var(--color-accent); background: var(--color-accent); color: #fff;
-  transition: background 140ms ease;
+/* — app header: brand, the one tab rail, meta + share — */
+.app-header {
+  position: sticky; top: 0; z-index: 20;
+  background: var(--color-surface-1); border-bottom: 1px solid var(--color-divider);
 }
-.pill-accent:hover { background: var(--color-accent-2); }
-
-/* The white canvas each Plotly chart sits on inside its card. Must stay in sync
-   with plot_bgcolor/paper_bgcolor in YieldChart.jsx and SpreadChart.jsx. */
-.plot-inset {
-  position: relative;
-  background: #fcfcfd;
-  border: 1px solid rgba(18, 18, 24, 0.05);
-  border-radius: 12px;
-  padding: 20px 22px 14px;
+.app-header-row {
+  display: flex; align-items: center; gap: 28px; height: 56px; padding: 0 28px;
+  max-width: 1400px; margin: 0 auto;
 }
+.app-brand { font-weight: 600; font-size: 13px; letter-spacing: -0.01em; white-space: nowrap; }
+
+/* Tabs. The underline is ONE shared element positioned from the active button,
+   so it slides between them — per-button borders cannot animate across a gap. */
+.tab-rail { position: relative; display: flex; gap: 24px; align-self: stretch; align-items: center; }
+.tab-indicator {
+  position: absolute; left: 0; bottom: 0; height: 2px; width: 0;
+  background: var(--color-accent); border-radius: 1px 1px 0 0;
+  transform: translateX(0);
+}
+.chart-tab {
+  font-size: 13px; font-weight: 500; padding: 0; cursor: pointer;
+  background: transparent; border: none; color: var(--color-muted);
+  transition: color var(--duration-base) var(--ease-standard),
+              transform var(--duration-fast) var(--ease-out);
+}
+.chart-tab.active { color: var(--color-text); }
+
+/* — dashboard shell — */
+.dashboard-content { max-width: 1400px; margin: 0 auto; width: 100%; }
+/* Was an inline style, which a media query cannot override — that is why the
+   cards stayed at 32px side padding on a phone while the stat strip dropped to
+   16px and the two visibly misaligned. */
+.dashboard-body { padding: 18px 28px 44px; display: flex; flex-direction: column; gap: 18px; }
+
+/* — dense stat strip — */
+.stat-strip {
+  display: flex; margin: 20px 28px 0; overflow: hidden;
+  border: 1px solid var(--color-divider); border-radius: var(--radius);
+  background: var(--color-surface-1); box-shadow: var(--shadow-card);
+}
+.stat-cell { flex: 1; padding: 14px 20px; border-left: 1px solid var(--color-divider); display: flex; flex-direction: column; gap: 5px; }
+.stat-cell:first-child { border-left: none; }
+.stat-label { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-muted); }
+.stat-value { font-family: var(--font-mono); font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.15; display: flex; align-items: center; }
+.stat-value.accent { color: var(--color-accent); }
+.delta { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: 11px; font-variant-numeric: tabular-nums; }
+.delta.up { color: var(--color-positive); }
+.delta.down { color: var(--color-accent-red); }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; flex: none; }
+
+/* — chart card header (title + range pills) — */
+.chart-card-head { display: flex; align-items: center; gap: 16px; margin-bottom: 4px; }
+.chart-range-pills { margin-left: auto; display: flex; gap: 6px; }
+
+/* — explainer row — */
+/* Two columns once there is a selection; CurveExplainer renders null without
+   one, so a single column avoids leaving a hole in the row. */
+.explainer-grid { display: grid; gap: 18px; }
+.explainer-grid.has-selection { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+
+/* — bottom row: sparkline panels + spread overview — */
+.bottom-grid { display: grid; grid-template-columns: 1fr 1fr 1.4fr; gap: 18px; }
+.sparkline-card-value { font-family: var(--font-mono); font-size: 19px; font-weight: 600; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.sparkline-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.spread-overview-value { font-family: var(--font-mono); font-weight: 600; font-size: 25px; margin: 12px 0 4px; font-variant-numeric: tabular-nums; }
+.spread-overview-actions { display: flex; gap: 8px; margin-top: auto; padding-top: 14px; }
+
+/* — ticker strip (top of page, real marquee) — */
+.ticker-strip { display: flex; overflow: hidden; height: 28px; background: var(--color-surface-1); border-bottom: 1px solid var(--color-divider); }
+.ticker-track { display: flex; align-items: center; flex: none; gap: 26px; padding: 0 14px; white-space: nowrap; }
+.ticker-item { display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-mono); font-size: 11px; }
+.ticker-name { color: var(--color-muted); }
+.ticker-value { color: var(--color-text); font-variant-numeric: tabular-nums; }
+.ticker-delta.up { color: var(--color-positive); }
+.ticker-delta.down { color: var(--color-accent-red); }
+
+/* The canvas each Plotly chart sits on inside its card. Tufte-lean: no fill and
+   no border — the plot is transparent and inherits the white card. This element
+   survives only as the positioning context for the loading overlay. */
+.plot-inset { position: relative; }
 
 /* Plotly modebar — kept visible on the spread chart, toned down to match. */
 .modebar { background: transparent !important; }
 .modebar-btn .icon path { fill: var(--color-muted) !important; }
 .modebar-btn:hover .icon path { fill: var(--color-accent) !important; }
 
-@keyframes spin { to { transform: rotate(360deg); } }
+/* ── motion ──────────────────────────────────────────────────────────────
+   Press feedback only. Everything below is gated on reduced-motion, and the
+   transform-based hover lift is additionally gated to real pointers so a tap
+   on a phone cannot latch it. */
+@media (prefers-reduced-motion: no-preference) {
+  .btn:active,
+  .btn-dashed:active,
+  .chip:active,
+  .range-pill:active,
+  .chart-tab:active { transform: scale(0.97); }
 
-/* — mobile (≤700px) — nav wraps, stat grid drops to 2-up, chart-tab rail and
-   range pills wrap, explainer row collapses to one column, headings shrink.
-   Every rule here only ever overrides a class whose base rule reproduces the
-   current desktop value, so nothing above 700px is affected. */
+  .tab-indicator {
+    transition: transform var(--duration-base) var(--ease-standard),
+                width var(--duration-base) var(--ease-standard);
+  }
+
+  @keyframes chip-select { from { transform: scale(0.96); } }
+  .chip-on, .range-pill-on { animation: chip-select var(--duration-fast) var(--ease-out); }
+
+  @keyframes ticker-scroll { to { transform: translateX(-100%); } }
+  .ticker-track { animation: ticker-scroll 36s linear infinite; }
+
+  /* Blink-on-update: triggered by key={value} remounting the node on real
+     changes, not a JS timer. */
+  @keyframes data-flash { from { background: rgba(14, 154, 146, 0.16); } to { background: transparent; } }
+  .flash { animation: data-flash 70ms linear; }
+
+  @keyframes blink { 50% { opacity: 0.25; } }
+  .blink { animation: blink 900ms steps(1) infinite; }
+}
+
+@media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
+  .card-hover:hover { transform: translateY(-1px); box-shadow: var(--shadow-card-hover); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track:last-child { display: none; }
+}
+
+/* ── responsive ─────────────────────────────────────────────────────────── */
+
+/* ≤900px — header wraps so the tab rail gets its own row, side gutters tighten
+   to 16px in lockstep across the strip and the body, bottom row stacks. */
+@media (max-width: 900px) {
+  .app-header-row { flex-wrap: wrap; height: auto; padding: 0 16px; gap: 0 14px; }
+  .app-brand { padding: 13px 0; }
+  .tab-rail { order: 3; width: 100%; height: 42px; gap: 26px; }
+
+  .stat-strip { margin: 14px 16px 0; }
+  .dashboard-body { padding: 14px 16px 36px; gap: 14px; }
+  .bottom-grid { grid-template-columns: 1fr; }
+}
+
+/* ≤700px — the phone case. Chart height drops, stat strip stacks, and every
+   pressable control clears the 44px touch target. */
 @media (max-width: 700px) {
-  .nav-inner { flex-wrap: wrap; gap: 12px 16px; padding: 12px 20px; }
-  .nav-brand { margin-right: 0; }
+  :root { --chart-h: 340px; }
 
-  .page-col { padding: 0 20px; }
-
-  .stat-grid { grid-template-columns: repeat(2, 1fr); }
-  .stat-tile { padding: 16px 12px; }
-  .stat-tile-value { font-size: 26px; }
-
-  .chart-tabs { flex-wrap: wrap; row-gap: 10px; }
+  .chart-card-head { flex-wrap: wrap; row-gap: 10px; }
   .chart-range-pills { margin-left: 0; flex-wrap: wrap; row-gap: 8px; }
+  .range-pill { min-height: 44px; padding-inline: 14px; }
 
   .explainer-grid.has-selection { grid-template-columns: 1fr; }
 
-  .hero-title { font-size: 30px; line-height: 1.12; }
-  .hero-break { display: none; }
+  .stat-strip { flex-direction: column; }
+  .stat-cell { border-left: none; border-top: 1px solid var(--color-divider); }
+  .stat-cell:first-child { border-top: none; }
 
-  .section-title { font-size: 22px; }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  @keyframes scfade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-  .scfade { opacity: 0; animation: scfade 420ms ease forwards; }
+  .chip { min-height: 44px; border-radius: var(--radius-sm); }
+  .btn-dashed, .input { min-height: 44px; }
+  .btn-icon { width: 44px; height: 44px; }
 }

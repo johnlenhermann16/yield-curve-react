@@ -75,7 +75,7 @@ function Tab({ name, active, onClick }) {
       type="button"
       onClick={onClick}
       className={`btn ${active ? 'btn-primary' : 'btn-secondary'}`}
-      style={{ fontFamily: 'var(--font-body)', fontSize: 14, padding: '8px 18px', borderRadius: 999 }}
+      style={{ fontSize: 12, padding: '7px 14px' }}
     >
       {name}
     </button>
@@ -83,7 +83,7 @@ function Tab({ name, active, onClick }) {
 }
 
 // countryData: the primary date's { <name>: { yields } } map.
-export default function CurveExplainer({ selected, countryData, Corners }) {
+export default function CurveExplainer({ selected, countryData }) {
   const [active, setActive] = useState(selected[0])
 
   if (selected.length === 0) return null
@@ -92,11 +92,10 @@ export default function CurveExplainer({ selected, countryData, Corners }) {
   const bullets = shape ? BULLETS[shape] : NO_SHAPE
 
   return (
-    <section className="card" style={{ padding: '26px 28px' }}>
-      {Corners && <Corners />}
-      <h2 style={{ fontSize: 22, marginBottom: 16 }}>Curve shape</h2>
+    <section className="card" style={{ padding: '18px 20px' }}>
+      <h2 style={{ marginBottom: 12 }}>Curve shape</h2>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 18 }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
         {selected.map((name) => (
           <Tab
             key={name}
@@ -109,8 +108,8 @@ export default function CurveExplainer({ selected, countryData, Corners }) {
 
       <div
         style={{
-          alignSelf: 'flex-start', marginBottom: 16,
-          fontSize: 12, letterSpacing: '0.06em', padding: '5px 12px', borderRadius: 999,
+          alignSelf: 'flex-start', marginBottom: 14,
+          fontSize: 11, letterSpacing: '0.06em', padding: '4px 10px', borderRadius: 'var(--radius-sm)',
           background: 'var(--color-accent-soft)', color: 'var(--color-accent-2)',
         }}
       >
@@ -119,7 +118,7 @@ export default function CurveExplainer({ selected, countryData, Corners }) {
 
       <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 11 }}>
         {bullets.map((b, i) => (
-          <li key={i} style={{ display: 'flex', gap: 12, fontSize: 14 }}>
+          <li key={i} style={{ display: 'flex', gap: 12, fontSize: 12 }}>
             <span
               style={{
                 marginTop: 7, height: 6, width: 6, flex: 'none',
@@ -134,8 +133,8 @@ export default function CurveExplainer({ selected, countryData, Corners }) {
       {current === 'Japan' && (
         <p
           style={{
-            marginTop: 'var(--space-4)', marginBottom: 0, padding: '14px 16px',
-            fontSize: 14, borderRadius: 12, border: '1px solid var(--color-divider)',
+            marginTop: 'var(--space-4)', marginBottom: 0, padding: '12px 14px',
+            fontSize: 12, borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-divider)',
             background: 'var(--color-accent-soft)', color: 'var(--color-text)',
           }}
         >

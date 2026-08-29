@@ -62,30 +62,36 @@ export default function YieldChart({ series, primaryDate }) {
           name: label,
           x,
           y,
+          opacity: MARKER_OPACITY_BY_POSITION[pos] ?? 1,
           marker: {
             symbol: 'diamond',
-            size: 12,
+            size: 11,
             color,
-            opacity: MARKER_OPACITY_BY_POSITION[pos] ?? 1,
-            line: { color: 'white', width: 1 },
+            line: { color: '#FFFFFF', width: 1.5 },
           },
           hovertemplate: `<b>${label}</b><br>%{x} · %{y:.2f}%<extra></extra>`,
         }
       }
 
+      // Flat, unfilled lines only — a decorative area wash under the primary
+      // trace isn't honest to a data-ink terminal aesthetic.
       return {
         type: 'scatter',
         mode: 'lines+markers',
         name: label,
         x,
         y,
+        opacity: MARKER_OPACITY_BY_POSITION[pos] ?? 1,
         line: {
+          // 2.25 rather than 2: Spain (#eda100) and Canada (#e87ba4) sit under
+          // 3:1 against white, and stroke weight is the one lever available —
+          // the country colours themselves are fixed by spec.
           color,
-          width: 2.5,
+          width: 2.25,
           shape: 'linear',
           dash: DASH_BY_POSITION[pos] ?? 'solid',
         },
-        marker: { size: 6, color, opacity: MARKER_OPACITY_BY_POSITION[pos] ?? 1 },
+        marker: { size: 5, color, line: { color: '#FFFFFF', width: 1.25 } },
         hovertemplate: `<b>${label}</b><br>%{x} · %{y:.2f}%<extra></extra>`,
       }
     }),
@@ -100,7 +106,10 @@ export default function YieldChart({ series, primaryDate }) {
     x1: j,
     y0: 0,
     y1: 1,
-    fillcolor: 'rgba(200, 60, 60, 0.07)',
+    // 5%, not the dark theme's 14%. These bands cover large areas, and on white
+    // the same red reads as a slab rather than a tint — it has to sit well below
+    // the lines it annotates.
+    fillcolor: 'rgba(211, 47, 60, 0.05)',
     line: { width: 0 },
     layer: 'below',
   }))
@@ -115,46 +124,45 @@ export default function YieldChart({ series, primaryDate }) {
     shapes.push({
       type: 'line', xref: 'paper', yref: 'paper',
       x0: 1, x1: 1, y0: 0, y1: 1,
-      line: { color: '#98989b', width: 1.5, dash: 'dash' },
+      line: { color: '#C3C9D2', width: 1.5, dash: 'dash' },
       layer: 'below',
     })
     annotations.push({
       xref: 'paper', yref: 'paper', x: 1, y: 1, xanchor: 'right', yanchor: 'bottom',
       text: `${event.name} · ${event.date}`,
       hovertext: event.desc,
-      font: { family: 'Barlow Condensed, sans-serif', size: 12, color: '#98989b' },
+      font: { family: '"IBM Plex Mono", monospace', size: 10, color: '#6B7280' },
       showarrow: false,
     })
   }
 
-  const titleDate =
-    series.length === 1 ? ` — ${series[0].date}` : ''
-
   const layout = {
-    title: {
-      text: `Government Bond Yield Curves${titleDate}`,
-      font: { family: 'Barlow Condensed, sans-serif', size: 24, color: '#1f2023' },
-      x: 0,
-      xanchor: 'left',
-      pad: { l: 4 },
-    },
-    font: { family: 'Barlow, sans-serif', color: '#4b4f55', size: 14 },
+    // No Plotly title: the chart card renders its own <h2> above this, and two
+    // titles stacked is the kind of duplication the redesign is removing.
+    font: { family: '"IBM Plex Mono", monospace', color: '#6B7280', size: 12 },
     xaxis: {
-      title: { text: 'Maturity', font: { size: 13, color: '#6b7075' } },
+      title: { text: 'MATURITY', font: { size: 11, color: '#6B7280' } },
       type: 'category',
       categoryorder: 'array',
       categoryarray: order,
       showgrid: false,
       showline: true,
-      linecolor: '#e2e2e4',
-      ticks: 'outside',
-      tickcolor: '#e2e2e4',
+      linecolor: '#D8DCE3',
+      // Tick marks dropped — the labels sit close enough to read without them.
+      ticks: '',
+      showspikes: true,
+      spikemode: 'across',
+      spikesnap: 'cursor',
+      spikecolor: 'rgba(14, 154, 146, 0.35)',
+      spikethickness: 1,
+      spikedash: 'dot',
     },
     yaxis: {
-      title: { text: 'Yield (%)', font: { size: 13, color: '#6b7075' } },
+      title: { text: 'YIELD (%)', font: { size: 11, color: '#6B7280' } },
       ticksuffix: '%',
       showgrid: true,
-      gridcolor: '#eeeef0',
+      gridcolor: 'rgba(11, 15, 20, 0.07)',
+      showline: false,
       zeroline: false,
     },
     shapes,
@@ -163,19 +171,25 @@ export default function YieldChart({ series, primaryDate }) {
       orientation: 'h',
       y: -0.18,
       x: 0,
-      font: { size: 13 },
+      font: { size: 11 },
     },
     hovermode: 'closest',
     hoverlabel: {
-      bgcolor: '#ffffff',
-      bordercolor: 'rgba(18, 18, 24, 0.14)',
-      font: { family: 'Barlow, sans-serif', color: '#14141a' },
+      bgcolor: '#FFFFFF',
+      bordercolor: '#D8DCE3',
+      font: { family: '"IBM Plex Mono", monospace', color: '#0B0F14' },
     },
-    // Matches the white inset the plot sits on in App.jsx.
-    plot_bgcolor: '#fcfcfd',
-    paper_bgcolor: '#fcfcfd',
-    margin: { l: 60, r: 24, t: 56, b: 72 },
+    // Transparent: the plot inherits the white card rather than sitting on its
+    // own panel. Nothing in index.css needs to stay in sync with a colour here
+    // any more — that was the old dark inset's constraint.
+    plot_bgcolor: 'rgba(0, 0, 0, 0)',
+    paper_bgcolor: 'rgba(0, 0, 0, 0)',
+    margin: { l: 56, r: 24, t: 16, b: 64 },
     autosize: true,
+    transition: {
+      duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 300,
+      easing: 'cubic-in-out',
+    },
   }
 
   const config = { displayModeBar: false, responsive: true }
@@ -186,7 +200,7 @@ export default function YieldChart({ series, primaryDate }) {
       layout={layout}
       config={config}
       useResizeHandler
-      style={{ width: '100%', height: '520px' }}
+      style={{ width: '100%', height: 'var(--chart-h)' }}
     />
   )
 }

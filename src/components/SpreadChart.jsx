@@ -132,7 +132,7 @@ export default function SpreadChart({ selected, selectedDate, years, setYears })
     return (
       <div
         className="text-muted"
-        style={{ display: 'flex', height: 520, alignItems: 'center', justifyContent: 'center', fontSize: 13 }}
+        style={{ display: 'flex', height: 'var(--chart-h)', alignItems: 'center', justifyContent: 'center', fontSize: 13 }}
       >
         Select {SPREAD_COUNTRIES.slice(0, -1).join(', ')} or {SPREAD_COUNTRIES.at(-1)} to view the 2Y10Y spread chart
       </div>
@@ -195,14 +195,9 @@ export default function SpreadChart({ selected, selectedDate, years, setYears })
   }
 
   const layout = {
-    title: {
-      text: `${shown.join(' & ')} 2Y10Y Spread — ${from} to ${to}`,
-      font: { family: 'Barlow Condensed, sans-serif', size: 24, color: '#1f2023' },
-      x: 0,
-      xanchor: 'left',
-      pad: { l: 4 },
-    },
-    font: { family: 'Barlow, sans-serif', color: '#4b4f55', size: 14 },
+    // No Plotly title: the chart card renders its own <h2>. The date range that
+    // used to live in the title is still shown, once, under the plot.
+    font: { family: '"IBM Plex Mono", monospace', color: '#6B7280', size: 12 },
     dragmode: 'pan',
     uirevision: viewRevision,
     xaxis: {
@@ -210,18 +205,17 @@ export default function SpreadChart({ selected, selectedDate, years, setYears })
       ...(centerRange ? { range: centerRange } : {}),
       showgrid: false,
       showline: true,
-      linecolor: '#e2e2e4',
-      ticks: 'outside',
-      tickcolor: '#e2e2e4',
+      linecolor: '#D8DCE3',
+      ticks: '',
       showspikes: true,
       spikemode: 'across',
       spikesnap: 'cursor',
-      spikecolor: 'rgba(89, 128, 166, 0.4)',
+      spikecolor: 'rgba(14, 154, 146, 0.35)',
       spikethickness: 1,
       spikedash: 'dot',
     },
     yaxis: {
-      title: { text: 'Spread (%)', font: { size: 13, color: '#6b7075' } },
+      title: { text: 'SPREAD (%)', font: { size: 11, color: '#6B7280' } },
       ticksuffix: '%',
       // Own uirevision key: while the parent uirevision holds x-pan steady,
       // Plotly ignores a new yaxis.range unless this key changes — so bump it
@@ -230,24 +224,25 @@ export default function SpreadChart({ selected, selectedDate, years, setYears })
         ? { range: yRange, autorange: false, uirevision: `${yRange[0]},${yRange[1]}` }
         : { autorange: true, uirevision: viewRevision }),
       showgrid: true,
-      gridcolor: '#eeeef0',
+      gridcolor: 'rgba(11, 15, 20, 0.07)',
+      showline: false,
       zeroline: false,
       showspikes: true,
       spikemode: 'across',
       spikesnap: 'cursor',
-      spikecolor: 'rgba(89, 128, 166, 0.4)',
+      spikecolor: 'rgba(14, 154, 146, 0.35)',
       spikethickness: 1,
       spikedash: 'dot',
     },
-    // Normal zone (above 0) light blue, inversion zone (below 0) red, split at
-    // the zero reference line drawn in grey on top. Selected-date marker (if
-    // any) drawn above everything, including the trace.
+    // Normal zone (above 0), inversion zone (below 0) red, split at the zero
+    // reference line drawn in grey on top. Selected-date marker (if any)
+    // drawn above everything, including the trace.
     shapes: [
-      { type: 'line', xref: 'paper', yref: 'y', x0: 0, x1: 1, y0: 0, y1: 0, line: { color: '#98989b', width: 1.5 }, layer: 'below' },
+      { type: 'line', xref: 'paper', yref: 'y', x0: 0, x1: 1, y0: 0, y1: 0, line: { color: '#C3C9D2', width: 1.5 }, layer: 'below' },
       ...(selectedDate
         ? [{
             type: 'line', xref: 'x', yref: 'paper', x0: selectedDate, x1: selectedDate, y0: 0, y1: 1,
-            line: { color: 'rgba(89, 128, 166, 0.6)', width: 1.5, dash: 'dash' },
+            line: { color: 'rgba(14, 154, 146, 0.6)', width: 1.5, dash: 'dash' },
             layer: 'above',
           }]
         : []),
@@ -257,20 +252,35 @@ export default function SpreadChart({ selected, selectedDate, years, setYears })
           xref: 'x', yref: 'paper', x: selectedDate, y: 1, yanchor: 'bottom',
           text: shortMonth(selectedDate),
           showarrow: false,
-          font: { family: 'Barlow Condensed, sans-serif', size: 12, color: '#41617f' },
+          font: { family: '"IBM Plex Mono", monospace', size: 11, color: '#0E9A92' },
         }]
       : [],
+    // Horizontal, below the plot — matching YieldChart. Plotly's default puts a
+    // vertical legend top-right, directly underneath the modebar.
+    legend: { orientation: 'h', y: -0.18, x: 0, font: { size: 11 } },
+    // Set here rather than by CSS: with a transparent paper_bgcolor Plotly falls
+    // back to its dark modebar theme, which no longer matches anything.
+    modebar: {
+      bgcolor: 'rgba(0, 0, 0, 0)',
+      color: '#6B7280',
+      activecolor: '#0E9A92',
+    },
     hovermode: 'x',
     hoverlabel: {
-      bgcolor: '#ffffff',
-      bordercolor: 'rgba(18, 18, 24, 0.14)',
-      font: { family: 'Barlow, sans-serif', color: '#14141a' },
+      bgcolor: '#FFFFFF',
+      bordercolor: '#D8DCE3',
+      font: { family: '"IBM Plex Mono", monospace', color: '#0B0F14' },
     },
-    // Matches the white inset the plot sits on in App.jsx.
-    plot_bgcolor: '#fcfcfd',
-    paper_bgcolor: '#fcfcfd',
-    margin: { l: 60, r: 24, t: 56, b: 48 },
+    // Transparent: the plot inherits the white card rather than sitting on its
+    // own panel.
+    plot_bgcolor: 'rgba(0, 0, 0, 0)',
+    paper_bgcolor: 'rgba(0, 0, 0, 0)',
+    margin: { l: 56, r: 24, t: 16, b: 64 },
     autosize: true,
+    transition: {
+      duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 300,
+      easing: 'cubic-in-out',
+    },
   }
 
   // One trace per country, coloured by its spec colour. Per-point hover payload
@@ -287,11 +297,11 @@ export default function SpreadChart({ selected, selectedDate, years, setYears })
       const b = Math.round(d.spread * 100)
       const status =
         d.spread < 0
-          ? '<span style="color:#c0392b">Inverted</span>'
-          : '<span style="color:#2a78d6">Normal</span>'
+          ? '<span style="color:#D32F3C">Inverted</span>'
+          : '<span style="color:#0A8F55">Normal</span>'
       return [b, status]
     }),
-    line: { color: s.color, width: 2 },
+    line: { color: s.color, width: 2.25 },
     hovertemplate:
       '%{fullData.name}<br>Date: %{x|%d %b %Y}<br>Spread: %{customdata[0]} bps<br>%{customdata[1]}<extra></extra>',
   }))
@@ -299,16 +309,16 @@ export default function SpreadChart({ selected, selectedDate, years, setYears })
   return (
     <div>
       {hasUnsupported && (
-        <p className="text-muted" style={{ margin: '0 0 var(--space-2)', fontSize: 13 }}>
+        <p className="text-muted" style={{ margin: '0 0 var(--space-2)', fontSize: 11 }}>
           Spread data available for {SPREAD_COUNTRIES.slice(0, -1).join(', ')} and{' '}
           {SPREAD_COUNTRIES.at(-1)} only. Other countries coming soon.
         </p>
       )}
-      <p className="text-muted" style={{ margin: '0 0 var(--space-2)', fontSize: 13 }}>
+      <p className="text-muted" style={{ margin: '0 0 var(--space-2)', fontSize: 11 }}>
         Below zero = inverted curve. Historically precedes recessions.
       </p>
       {selectedDate && (
-        <p className="text-muted" style={{ margin: '0 0 16px', fontSize: 13 }}>
+        <p className="text-muted" style={{ margin: '0 0 16px', fontSize: 11 }}>
           Viewing: {formatDate(selectedDate)}
         </p>
       )}
@@ -319,15 +329,17 @@ export default function SpreadChart({ selected, selectedDate, years, setYears })
             style={{
               position: 'absolute', inset: 0, zIndex: 10,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'color-mix(in srgb, var(--color-bg) 70%, transparent)',
+              background: 'color-mix(in srgb, var(--color-surface-1) 72%, transparent)',
               backdropFilter: 'blur(1px)',
             }}
           >
-            <div className="text-muted" style={{ fontSize: 13 }}>Loading spread…</div>
+            <span className="blink" style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--color-accent)', letterSpacing: '0.04em' }}>
+              LOADING…
+            </span>
           </div>
         )}
         {error ? (
-          <div className="text-muted" style={{ display: 'flex', height: 520, alignItems: 'center', justifyContent: 'center', fontSize: 13 }}>
+          <div className="text-muted" style={{ display: 'flex', height: 'var(--chart-h)', alignItems: 'center', justifyContent: 'center', fontSize: 13 }}>
             Couldn’t reach the data service. Try again in a moment.
           </div>
         ) : (
@@ -342,10 +354,19 @@ export default function SpreadChart({ selected, selectedDate, years, setYears })
               modeBarButtonsToRemove: ['lasso2d', 'select2d', 'autoScale2d'],
             }}
             useResizeHandler
-            style={{ width: '100%', height: '520px' }}
+            style={{ width: '100%', height: 'var(--chart-h)' }}
           />
         )}
       </div>
+
+      {/* The span the plot covers. Used to live in the Plotly title, which the
+          card's own <h2> replaced. */}
+      <p
+        className="text-muted"
+        style={{ margin: '12px 0 0', fontSize: 11, fontFamily: 'var(--font-mono)' }}
+      >
+        {shown.join(' · ')} — {from} to {to}
+      </p>
     </div>
   )
 }
