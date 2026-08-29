@@ -119,6 +119,60 @@ export async function fetchYieldsForDates(country, dates) {
   )
 }
 
+// Previous trading-day observation strictly before `date` — the comparison
+// point for the top stat row's bp-delta badges. Mirrors latestObservedDate's
+// "one row, ordered desc" trick, just with a strict `lt` filter.
+async function previousObservedDate(country, date) {
+  const rows = await fetchRows('yield_observations', {
+    country: `eq.${country}`,
+    observation_date: `lt.${date}`,
+    select: 'observation_date',
+    order: 'observation_date.desc',
+    limit: 1,
+  })
+  return rows[0]?.observation_date ?? null
+}
+
+// Yields for the trading day before `actualDate` — pass the already-resolved
+// actual_date from a prior fetchYields call, not the raw picked date, so this
+// doesn't re-resolve the primary date's own trading day a second time.
+export async function fetchPreviousYields(country, actualDate) {
+  if (!actualDate) return { yields: {}, actual_date: null }
+  const prevDate = await previousObservedDate(country, actualDate)
+  if (!prevDate) return { yields: {}, actual_date: null }
+  const rows = await fetchRows('yield_observations', {
+    country: `eq.${country}`,
+    observation_date: `eq.${prevDate}`,
+    select: 'maturity,yield_pct',
+  })
+  const yields = {}
+  for (const row of rows) yields[row.maturity] = row.yield_pct
+  return { yields, actual_date: prevDate }
+}
+
+// One country/maturity's yield over a date range, e.g. for a sparkline —
+// mirrors fetchSpread's exact shape/pagination pattern against
+// yield_observations instead of spread_observations.
+export async function fetchYieldHistory(country, maturity, from, to) {
+  const dateFilters = []
+  if (from) dateFilters.push(`gte.${from}`)
+  if (to) dateFilters.push(`lte.${to}`)
+
+  const rows = await fetchAllRows('yield_observations', {
+    country: `eq.${country}`,
+    maturity: `eq.${maturity}`,
+    ...(dateFilters.length ? { observation_date: dateFilters } : {}),
+    select: 'observation_date,yield_pct',
+    order: 'observation_date.asc',
+  })
+
+  return {
+    country,
+    maturity,
+    data: rows.map((row) => ({ date: row.observation_date, yield: row.yield_pct })),
+  }
+}
+
 // Fetch a country's 2Y10Y spread over a date range as
 // { country, data: [{ date, spread }] }. `from`/`to` are optional ISO dates;
 // an omitted `to` leaves the range open-ended (up to the latest observation).
