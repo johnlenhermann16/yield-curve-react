@@ -192,7 +192,7 @@ export default function YieldChart({ series, primaryDate }) {
     },
   }
 
-  const config = { displayModeBar: false, responsive: true }
+  const config = { displayModeBar: true, scrollZoom: true, responsive: true }
 
   return (
     <Plot
