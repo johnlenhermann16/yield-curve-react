@@ -55,7 +55,7 @@ async function fetchAllRows(table, params) {
   }
 }
 
-// The date picker (App.jsx) allows any calendar day, including weekends and
+// The date picker (Dashboard.jsx) allows any calendar day, including weekends and
 // holidays the bond market has no observation for. Resolve to the latest
 // trading-day observation on or before the requested date, per country
 // (different markets close on different days), the same "actual_date"

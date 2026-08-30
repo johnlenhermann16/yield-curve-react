@@ -15,7 +15,8 @@ Countries covered: US, UK, Germany, France, Italy, Spain, Canada, Switzerland, J
 ## Stack
 
 - React 19 + Vite
-- Tailwind CSS 4
+- Plain CSS with design tokens in `src/index.css` (Tailwind was tried,
+  never used, and removed)
 - Plotly.js (`react-plotly.js`) for charts
 - Supabase (Postgres + PostgREST) as the data source — queried directly from the client with a read-only anon key scoped by row-level security
 
@@ -35,3 +36,7 @@ npm run dev
 - `npm run build` — production build
 - `npm run lint` — run Oxlint
 - `npm run preview` — preview the production build locally
+
+## License
+
+MIT — see [LICENSE](LICENSE).
