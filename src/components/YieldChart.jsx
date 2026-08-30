@@ -191,7 +191,10 @@ export default function YieldChart({ series, primaryDate }) {
     // any more — that was the old dark inset's constraint.
     plot_bgcolor: 'rgba(0, 0, 0, 0)',
     paper_bgcolor: 'rgba(0, 0, 0, 0)',
-    margin: { l: 56, r: 24, t: 16, b: 64 },
+    // t: 16 put the modebar right on top of the highest gridline; Spread
+    // avoids this because its y-range always has extra data padding above
+    // the top trace. Yield Curve's doesn't, so give the modebar its own room.
+    margin: { l: 56, r: 24, t: 36, b: 64 },
     autosize: true,
     transition: {
       duration: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 300,
